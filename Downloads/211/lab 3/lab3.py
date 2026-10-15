@@ -49,10 +49,13 @@ def update_odometer():
 
 
 def travel_safe(waypoint):
+   move_fwd(waypoint[0] * TILE_SIZE, "x")
+   turn(90)
+   move_fwd(waypoint[1] * TILE_SIZE, "y")
 
 
 def travel_short(waypoint):
-    angle = 
+    angle = math.degrees(math.atan2(delta_y, delta_x)) - theta
     turn(angle)
     leftmotor.set_dps(30)
     rightmotor.set_dps(30)
