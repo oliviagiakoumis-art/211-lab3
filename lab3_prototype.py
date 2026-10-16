@@ -1,4 +1,4 @@
-from utils.brick import ColorSensor, reset_brick, wait_ready_sensors, Motor, time
+from utils.brick import EV3ColorSensor, reset_brick, wait_ready_sensors, Motor, time
 import math
 
 # --- Constants & Configuration ---
@@ -32,10 +32,10 @@ RIGHT_THRESHOLD =6         # NXT right sensor (get_value below this = black)
 
 
 color_sensor_left = EV3ColorSensor(2)    # EV3, port 2
-color_sensor_right = NXTColorSensor(1)	 #NXT, port 1
+#color_sensor_right = NXTColorSensor(1)	 #NXT, port 1
 
 
-left_black = color_sensor_left.get_red() <= LEFT_THRESHOLD #true if black
+
 
 wait_ready_sensors()
 
@@ -89,8 +89,8 @@ def execute_turn(target_delta_theta):
     """Turns the robot by a specified angle while running live odometry."""
     left_start = left_motor.get_encoder()
     speed = 20
-    left_motor.set_power(speed)
-    right_motor.set_power(-speed)
+    left_motor.set_dps(speed)
+    right_motor.set_dps(-speed)
     
     turned_degrees = 0
     while abs(turned_degrees) < abs(target_delta_theta):
@@ -99,14 +99,32 @@ def execute_turn(target_delta_theta):
         turned_degrees = encoder_diff * (2 * r / b)
         time.sleep(0.01)
         
-    left_motor.set_power(0)
-    right_motor.set_power(0)
+    left_motor.set_dps(0)
+    right_motor.set_dps(0)
 
-
+def short_drive_distance(target_distance):
+    left_start = left_motor.get_encoder()
+    speed = -30
+    left_motor.set_dps(speed)
+    right_motor.set_dps(speed)
+    
+    traveled_distance = 0
+    while traveled_distance < target_distance:
+        update_odometer()
+        encoder_diff = left_motor.get_encoder() - left_start
+        traveled_distance = (encoder_diff / 360.0) * (2 * math.pi * r)
+        time.sleep(0.01) # for CPu of PI
+        
+    # Stop motors when target distance is reached
+    left_motor.set_dps(0)
+    right_motor.set_dps(0)
+    
+    
+    
 def check_for_black():
     
     count= 0
-    
+    left_black = color_sensor_left.get_red() <= LEFT_THRESHOLD #true if black
     
     while count<10 and not(left_black) :
         #check the left
@@ -114,6 +132,8 @@ def check_for_black():
         left_motor.set_dps(-30)
         right_motor.set_dps(0)
         count+=1
+        
+        left_black = color_sensor_left.get_red() <= LEFT_THRESHOLD #true if black
         time.sleep(0.01)
         if left_black:
             return
@@ -126,7 +146,10 @@ def check_for_black():
         left_motor.set_dps(0)
         right_motor.set_dps(-30)
         count+=1
+        
+        left_black = color_sensor_left.get_red() <= LEFT_THRESHOLD #true if black
         time.sleep(0.01)
+        
         if left_black:
             return
         
@@ -136,10 +159,12 @@ def check_for_black():
         update_odometer()
         left_motor.set_dps(-30)
         right_motor.set_dps(0)
+        
+        left_black = color_sensor_left.get_red() <= LEFT_THRESHOLD #true if black
         time.sleep(0.01)
         
         
-def drive_distance(target_distance):
+def safe_drive_distance(target_distance):
     """Drives straight for a specified distance in cm while running live odometry."""
     left_start = left_motor.get_encoder()
     speed = -30
@@ -228,7 +253,7 @@ def navigate_shortest_path(target_gx, target_gy):
     
     distance = math.sqrt(dx**2 + dy**2)
     print(f"Driving straight for {distance:.2f} cm...")
-    drive_distance(distance)
+    short_drive_distance(distance)
 
 def navigate_safest_path(target_gx, target_gy):
     """Navigates to a waypoint strictly along X and Y axes sequentially[cite: 1]."""
@@ -248,7 +273,7 @@ def navigate_safest_path(target_gx, target_gy):
         theta = target_theta_x
         
         print(f"Driving X-distance: {abs(dx):.2f} cm...")
-        drive_distance(abs(dx))
+        safe_drive_distance(abs(dx))
         
     # --- Step 2: Move along Y-axis ---
     dy = target_y - y
@@ -261,7 +286,7 @@ def navigate_safest_path(target_gx, target_gy):
         theta = target_theta_y
         
         print(f"Driving Y-distance: {abs(dy):.2f} cm...")
-        drive_distance(abs(dy))
+        safe_drive_distance(abs(dy))
 
 # --- Main Program Execution ---
 try:
@@ -298,7 +323,7 @@ try:
 
 except KeyboardInterrupt:
     print("\nProgram interrupted by user (Ctrl+C). Stopping motors safely...")
-    left_motor.set_power(0)
-    right_motor.set_power(0)
+    left_motor.set_dps(0)
+    right_motor.set_dps(0)
     reset_brick()
     print("Brick reset complete.")
