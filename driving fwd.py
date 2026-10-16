@@ -1,4 +1,4 @@
-from utils.brick import ColorSensor, Motor, wait_ready_sensors, time
+from utils.brick import EV3ColorSensor, Motor, wait_ready_sensors, time
 import math
 
 # --- Constants & Configuration ---
@@ -19,7 +19,7 @@ y = 0.0
 theta = 0.0
 
 LEFT_THRESHOLD = 25  # EV3 left sensor threshold
-color_sensor_left = ColorSensor("2")  # Adjust port string if needed ("1" or "2")
+color_sensor_left = EV3ClorSensor(2)  # Adjust port string if needed ("1" or "2")
 
 wait_ready_sensors(True)
 
