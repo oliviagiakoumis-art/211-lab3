@@ -5,13 +5,13 @@ import math
 TILE_SIZE = 30.48  
 PATH_TYPE = "SAFE"
 WAYPOINTS = [(1,1), (1,2), (2,0)]
-r = 2.2            
-b = 9.8 
+RIGHT_THRESHOLD = 3   
+RADIUS = 2.2            
+TRACK_WIDTH = 10.0 
 
 leftmotor = Motor("C")
-rightmotor = Motor("B")
-color_sensor_left = EV3ColorSensor(2)    # EV3, port 2
-color_sensor_right = NXTColorSensor(1)
+rightmotor = Motor("B") 
+colorsensor = NXTColorSensor(1)
 
 x = 0.0
 y = 0.0                                                     
@@ -61,6 +61,11 @@ def travel_short(waypoint):
     rightmotor.set_dps(30)
 
 def correct_path(left, right):
+    if (colorsensor.get_value()[0] > RIGHT_THRESHOLD):
+        left.set_dps(20)
+        right.set_dps(30)
+        update_odometer()
+        time.sleep(0.01)
 
 def turn(turn_angle):
     
