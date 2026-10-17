@@ -7,6 +7,9 @@ RADIUS = 2.2
 TRACK_WIDTH = 10.5 
 SPEED = -30
 TILE = 30.48  
+THRESHOLD = 25
+STEPS = 30
+CORRECTION = 0.5
 
 leftmotor = Motor("B")
 rightmotor = Motor("C")
@@ -69,14 +72,57 @@ def drive_forward(distance, direction):
     leftmotor.set_dps(0)
     rightmotor.set_dps(0)
 
+def steer(direction):
+    slow = SPEED * CORRECTION
+    if direction == "right":      
+        leftmotor.set_dps(SPEED)
+        rightmotor.set_dps(slow)
+    else:
+        leftmotor.set_dps(slow)
+        rightmotor.set_dps(SPEED)
+
+def correct_path():
+    for _ in range(STEPS):
+        steer("right")
+        update_odometer()
+        time.sleep(0.01)
+        if colorsensor.get_value()[0] < THRESHOLD:
+            return
+    while colorsensor.get_value()[0] >= THRESHOLD:
+        steer("left")
+        update_odometer()
+        time.sleep(0.01)
+
+def drive_forward_correct(distance, direction):
+    if direction == "x":
+        target_x = x + distance
+        while x < target_x:
+            if colorsensor.get_value()[0] < THRESHOLD:
+                leftmotor.set_dps(SPEED)
+                rightmotor.set_dps(SPEED)
+            else:
+                correct_path()  
+            update_odometer()
+            print(f"X: {x:.2f} cm | Y: {y:.2f} cm | Theta: {theta:.2f}°", end="\r")
+            time.sleep(0.01)  
+    else:
+        target_y = y + distance
+        while y < target_y:
+            leftmotor.set_dps(SPEED)
+            rightmotor.set_dps(SPEED)
+            update_odometer()
+            print(f"X: {x:.2f} cm | Y: {y:.2f} cm | Theta: {theta:.2f}°", end="\r")
+            time.sleep(0.01)
+    leftmotor.set_dps(0)
+    rightmotor.set_dps(0)
+
 try:
     print("Testing forward drive with live recovery over 1 tile (30.48 cm)...")
-    drive_forward(TILE_SIZE, "y")
+    drive_forward(TILE, "y")
+    test = input("\nPress Enter to continue to the color correction test...")
+    drive_forward_correct(TILE, "y")
 
-except BaseException:
+finally:
     reset_brick()
-    exit()
-
-reset_brick()
 
     
