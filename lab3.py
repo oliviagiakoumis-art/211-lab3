@@ -138,6 +138,13 @@ def drive_forward_correct(distance, direction):
     leftmotor.set_dps(0)
     rightmotor.set_dps(0)
 
+def drive(distance):
+    initial = rightmotor.get_encoder()
+    while (rightmotor.get_encoder() < initial + distance):
+        leftmotor.set_dps(SPEED)
+        rightmotor.set_dps(SPEED)
+        time.sleep(0.01)
+
 def travel_safe(waypoint):
    drive_forward_correct(waypoint[0] * TILE, "x")
    execute_turn(90)
@@ -145,9 +152,9 @@ def travel_safe(waypoint):
 
 
 def travel_short(waypoint):
-    angle = math.degrees(math.atan2(waypoint[0], waypoint[1])) -theta
+    angle = (math.atan2(waypoint[0], waypoint[1])) 
     execute_turn(angle)
-    drive_forward(math.hypot(waypoint[0], waypoint[1]), "y")  
+    drive(math.hypot(waypoint[0], waypoint[1]))  
 
 if __name__ == "main":
     try:
