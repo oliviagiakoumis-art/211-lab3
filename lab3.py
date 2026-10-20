@@ -127,11 +127,14 @@ def drive_forward_correct(distance, direction):
     else:
         target_y = y + distance
         while y < target_y:
-            leftmotor.set_dps(SPEED)
-            rightmotor.set_dps(SPEED)
+            if colorsensor.get_value()[0] < THRESHOLD:
+                leftmotor.set_dps(SPEED)
+                rightmotor.set_dps(SPEED)
+            else:
+                correct_path()  
             update_odometer()
             print(f"X: {x:.2f} cm | Y: {y:.2f} cm | Theta: {theta:.2f}°", end="\r")
-            time.sleep(0.01)
+            time.sleep(0.01) 
     leftmotor.set_dps(0)
     rightmotor.set_dps(0)
 
