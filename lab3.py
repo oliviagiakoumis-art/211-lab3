@@ -144,10 +144,9 @@ def travel_safe(waypoint):
 
 
 def travel_short(waypoint):
-    angle = math.degrees(math.atan2(delta_y, delta_x)) - theta
+    angle = math.degrees(math.atan2(waypoint[0], waypoint[1])) - theta
     execute_turn(angle)
-    leftmotor.set_dps(30)
-    rightmotor.set_dps(30)
+    drive_forward(math.hypot(waypoint[0], waypoint[1]), "x")  
 
 if __name__ == "main":
     try:
