@@ -5,12 +5,12 @@ import math
 TILE = 30.48  
 PATH_TYPE = "SAFE" #SHORT or SAFE
 WAYPOINTS = [(1,1), (1,2), (2,0)]
-RIGHT_THRESHOLD = 3   
+THRESHOLD = 35 
 RADIUS = 2.2            
 TRACK_WIDTH = 10.0 
-SPEED = -30
+SPEED = -100
 STEPS = 30
-CORRECTION = 0.5
+
 
 leftmotor = Motor("C")
 rightmotor = Motor("B") 
@@ -71,7 +71,6 @@ def execute_turn(target_delta_theta):
             time.sleep(0.01)
 
     rightmotor.set_dps(0)
-    leftmotor.set_dps(0)
 
 def drive_forward(distance, direction):
     if direction == "x":
@@ -94,13 +93,12 @@ def drive_forward(distance, direction):
     rightmotor.set_dps(0)
 
 def steer(direction):
-    slow = SPEED * CORRECTION
     if direction == "right":      
-        leftmotor.set_dps(SPEED)
-        rightmotor.set_dps(slow)
+        leftmotor.set_dps(SPEED*0.25)
+        rightmotor.set_dps(0)
     else:
-        leftmotor.set_dps(slow)
-        rightmotor.set_dps(SPEED)
+        leftmotor.set_dps(0)
+        rightmotor.set_dps(SPEED*0.25)
 
 def correct_path():
     for _ in range(STEPS):
@@ -144,7 +142,7 @@ def travel_safe(waypoint):
 
 
 def travel_short(waypoint):
-    angle = math.degrees(math.atan2(waypoint[0], waypoint[1])) - theta
+    angle = math.degrees(math.atan2(waypoint[0], waypoint[1])) -theta
     execute_turn(angle)
     drive_forward(math.hypot(waypoint[0], waypoint[1]), "x")  
 

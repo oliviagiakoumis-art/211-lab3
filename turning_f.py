@@ -46,11 +46,6 @@ def update_odometer():
     prev_left_encoder = current_left_encoder
     prev_right_encoder = current_right_encoder
 
-def get_shortest_angle(target_theta, current_theta):
-    delta = (target_theta - current_theta) % 360  
-    if delta > 180:
-        delta -= 360
-    return delta
 
 def execute_turn(target_delta_theta):
     #turn function in both directions, positive for clockwise and negative for counter-clockwise
