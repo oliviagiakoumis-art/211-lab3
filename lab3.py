@@ -4,7 +4,7 @@ import math
 
 TILE = 30.48  
 PATH_TYPE = "SAFE" #SHORT or SAFE
-WAYPOINTS = [(1,1), (1,2), (2,0)]
+WAYPOINTS = [(1,1), (2,2), (2,0)]
 THRESHOLD = 35 
 RADIUS = 2.2            
 TRACK_WIDTH = 10.0 
@@ -139,22 +139,21 @@ def drive_forward_correct(distance, direction):
     rightmotor.set_dps(0)
 
 def travel_safe(waypoint):
-   move_fwd(waypoint[0] * TILE, "x")
+   drive_forward_correct(waypoint[0] * TILE, "x")
    execute_turn(90)
-   move_fwd(waypoint[1] * TILE, "y")
+   drive_forward_correct(waypoint[1] * TILE, "y")
 
 
 def travel_short(waypoint):
     angle = math.degrees(math.atan2(waypoint[0], waypoint[1])) -theta
     execute_turn(angle)
-    drive_forward(math.hypot(waypoint[0], waypoint[1]), "x")  
+    drive_forward(math.hypot(waypoint[0], waypoint[1]), "y")  
 
 if __name__ == "main":
     try:
         for waypoint in WAYPOINTS:
             if PATH_TYPE == "SAFE":
                 travel_safe(waypoint)
-                correct_path(leftmotor, rightmotor)
             elif PATH_TYPE == "SHORT":
                 travel_short(waypoint)
                 
