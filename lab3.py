@@ -27,6 +27,7 @@ prev_left_encoder = 0
 
 
 def update_odometer():
+    #working update_odometer function from lab 2
     global x, y, theta, prev_right_encoder, prev_left_encoder
 
     current_left_encoder = -leftmotor.get_encoder()
@@ -35,16 +36,18 @@ def update_odometer():
     delta_left = current_left_encoder - prev_left_encoder
     delta_right = current_right_encoder - prev_right_encoder
 
-    dl = (delta_left / 360.0) * 2 * math.pi * RADIUS
-    dr = (delta_right / 360.0) * 2 * math.pi * RADIUS
+    delta_distance_left = (delta_left / 360.0) * 2 * math.pi * RADIUS
+    delta_distance_right = (delta_right / 360.0) * 2 * math.pi * RADIUS
 
-    delta_theta = (dl - dr) / TRACK_WIDTH          # radians
-    delta_distance = (dl + dr) / 2.0
+    delta_theta = (delta_distance_left - delta_distance_right) / TRACK_WIDTH
+    delta_distance = (delta_distance_left + delta_distance_right) / 2.0
 
-    heading = math.radians(theta) + delta_theta / 2.0
-    x += delta_distance * math.sin(heading)
-    y += delta_distance * math.cos(heading)
-    theta += math.degrees(delta_theta)             # no wrapping
+    delta_x = delta_distance * math.sin(math.radians(theta) + delta_theta / 2.0)
+    delta_y = delta_distance * math.cos(math.radians(theta) + delta_theta / 2.0)
+
+    x += delta_x
+    y += delta_y
+    theta = (theta + math.degrees(delta_theta)) % 360.0
 
     prev_left_encoder = current_left_encoder
     prev_right_encoder = current_right_encoder

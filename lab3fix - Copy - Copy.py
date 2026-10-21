@@ -225,7 +225,66 @@ def travel_safe(waypoint):
         execute_turn(90 if dx > 0 else 270)
         drive_forward_correct(dx, "x")
 
+def drive_straight_distance(distance, heading):
+    global x, y
 
+    start_x = x
+    start_y = y
+
+    heading_rad = math.radians(heading)
+    progress = 0.0
+
+    try:
+        while progress < distance:
+            leftmotor.set_dps(SPEED)
+            rightmotor.set_dps(SPEED)
+
+            update_odometer()
+
+            # Calculate distance travelled in the intended direction.
+            progress = (
+                (x - start_x) * math.sin(heading_rad)
+                + (y - start_y) * math.cos(heading_rad)
+            )
+
+            print(
+                f"X: {x:.2f} cm | Y: {y:.2f} cm | "
+                f"Theta: {theta:.2f}° | "
+                f"Distance: {progress:.2f}/{distance:.2f} cm",
+                end="\r"
+            )
+
+            time.sleep(0.01)
+
+    finally:
+        leftmotor.set_dps(0)
+        rightmotor.set_dps(0)
+
+def travel_short(waypoint):
+    # Convert the waypoint from grid coordinates to centimetres.
+    target_x = waypoint[0] * TILE
+    target_y = waypoint[1] * TILE
+
+    # Calculate displacement from the current position.
+    dx = target_x - x
+    dy = target_y - y
+
+    # Calculate the straight-line distance to the waypoint.
+    distance = math.hypot(dx, dy)
+
+    # Already at the waypoint.
+    if distance < 1.0:
+        return
+
+    # Calculate heading:
+    # 0 degrees points along +y, increasing clockwise toward +x.
+    target_heading = math.degrees(math.atan2(dx, dy)) % 360.0
+
+    # Turn using the minimum angle.
+    execute_turn(target_heading)
+
+    # Drive directly to the waypoint.
+    drive_straight_distance(distance, target_heading)
 try:
     travel_safe([1, 1])
 
